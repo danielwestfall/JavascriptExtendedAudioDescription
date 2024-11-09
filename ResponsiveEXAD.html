@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video with Programmatic Extended Audio Description</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>YouTube Video with Programmatic Extended Audio Description</h1>
+        <p class="instruction">Click "Play" to watch the video with extended audio descriptions.</p>
+        <div class="control-buttons">
+            <button id="testVoiceBtn">Test Voice</button>
+            <button id="playPauseBtn">Play</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="playerContainer">
+            <div id="player"></div>
+            <p id="captionDisplay"></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Your Company. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const videoData = {
+            videoId: "AVx0oamyxLQ", // Your video ID
+            timestamps: [
+                { time: 0.5, description: "Easy Baking's Easy plain vanilla muffin recipe. A batch of muffins sits on a cooling rack. A muffin is picked up and the paper wrapper  is removed." },
+                { time: 9, description: "The muffin is split in half from top to bottom. The soft texture of the inside of the muffin is presented and the hands squeeze the halves and they spring back into shape." },
+                { time: 15, description: "Prepare muffin tray and set aside. Paper muffin cups are placed in each cup of the muffin tin." },
+                { time: 18, description: "And turn on the oven to 180C / 360F / Gas Mark 4. The tray is removed. Cut to a glass bowl on screen. The contents of two eggs are poured into the bowl." },
+                { time: 24, description: "Whisk until fluffy and foamy. A handheld electric mixer with a whisk attachment is used to mix the eggs." },
+                { time: 28, description: "Whisk for about 3 minutes. The mixture is now a foamy light yellow color." },
+                { time: 35, description: "125 milliliters (one half cup) vegetable oil is added to the whisked eggs. Then whisk to combine." },
+                { time: 46, description: "The mixture has lightened in color and is more fluid. 250 milliliters (1 cup) of milk is added. Then whisk to combine." },
+                { time: 56, description: "The mixture is almost white and very fluid. 200 grams (1 cup) of sugar and 1 teaspoon of vanilla extract is added. Then whisk to combine." },
+                { time: 67, description: "A sieve is held over the bowl by one hand. With the other hand, 360 grams (3 cups) of plain flour poured into the sifter." },
+                { time: 72, description: "1 teaspoon baking powder and 1 half teaspoon salt are added to the flour in the sifter. A teaspoon is used to briefly mix the dry ingredients." },
+                { time: 83, description: "The dry ingredients are sifted into the bowl." },
+                { time: 89, description: "Mix in the flour gently so it doesn't scatter when whisking. A pink spatula gently combines the wet and dry ingredients" },
+                { time: 96, description: "Whisk until just combined. Don't over whisk. The mixture is mixed from a lumpy to a smooth consistency. " },
+                { time: 102, description: "Now you can add 100 grams (two thirds cup) of raisins or chocolate chips and mix gently with a spatula." },
+                { time: 107, description: "The whisk is raised above the bowl and the batter flows slowly from the whisk in thick, smooth ribbons, gradually sinking back into the bowl. The question Which country and city are you watching from? is displayed on screen." },
+                { time: 109, description: "A trigger ice cream scoop portions out the batter. I would love to hear from you is written on screen." },
+                { time: 113, description: "Divide the batter between 12 tins. This recipe makes 12 large muffins. The ice cream scoop adds batter into the paper lined tins." },
+                { time: 120, description: "A muffin tray with tins full of batter is removed from the counter. Bake in a preheated oven: At 180 C / 260 F / Gask mark 4. For 20-25 minutes. Or until toothpick comes out clean (Every oven is different)" },
+                { time: 127, description: "The baked tray of muffins is placed on a cooling rack on the counter. Click like, subscribe, and notifications. A toothpick is inserted in the muffin and pulled out to display how clean it will be." },
+                { time: 137, description: "Cool it down in the tray for 10 minutes. Transfer onto cooling rack and cool down completely. The muffins are placed directly on the cooling rack. Any questions about this recipe let me know. Enjoy" }
+
+            ]
+        };
+
+        let player;
+        let currentTimestampIndex = 0;
+        let isPlaying = false;
+        const synth = window.speechSynthesis;
+        let currentVoice;
+        let isSpeechPaused = false;
+        let utterance;
+
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const testVoiceBtn = document.getElementById("testVoiceBtn");
+        const captionDisplay = document.getElementById("captionDisplay");
+        const sampleVoiceText = "This is a sample line for the voice test.";
+
+        // Check for the most popular voices, with fallback options
+        function loadVoice() {
+            const availableVoices = synth.getVoices();
+            const preferredVoices = [
+                "Google UK English Female",
+                "Google US English",
+                "Microsoft David Desktop",
+                "Siri",
+                "en-US-Wavenet-F"
+            ];
+
+            for (let voiceName of preferredVoices) {
+                currentVoice = availableVoices.find(voice => voice.name === voiceName);
+                if (currentVoice) break;
+            }
+
+            if (!currentVoice) {
+                currentVoice = availableVoices[0];
+            }
+
+            // Now initialize the YouTube player after the voice is loaded
+            initializeYouTubePlayer();
+        }
+
+        // Ensure the YouTube IFrame API is ready before initializing player
+        function onYouTubeIframeAPIReady() {
+            initializeYouTubePlayer();
+        }
+
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoice;
+        } else {
+            loadVoice();
+        }
+
+        function initializeYouTubePlayer() {
+            // Ensure that the player initialization is done only when the API is ready
+            player = new YT.Player('player', {
+                height: '390',
+                width: '640',
+                videoId: videoData.videoId,
+                playerVars: {
+                    rel: 0,
+                    cc_load_policy: 1,
+                    modestbranding: 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            currentTimestampIndex = 0;
+            isPlaying = false;
+            playPauseBtn.textContent = "Play";
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING && isPlaying) {
+                checkTimestamp();
+            }
+        }
+
+        function checkTimestamp() {
+            if (currentTimestampIndex < videoData.timestamps.length) {
+                const timestamp = videoData.timestamps[currentTimestampIndex].time;
+                const checkInterval = setInterval(() => {
+                    const currentTime = player.getCurrentTime();
+
+                    if (currentTime >= timestamp) {
+                        clearInterval(checkInterval);
+                        player.pauseVideo();
+                        displayAndSpeakText(videoData.timestamps[currentTimestampIndex].description);
+                    }
+                }, 500);
+            }
+        }
+
+        function displayAndSpeakText(text) {
+            // Split the text into sentences and join them with <br> tags for line breaks
+            const formattedText = text.split('. ').join('.<br><br>'); // Adjust the delimiter as necessary
+            captionDisplay.innerHTML = formattedText;  // Use innerHTML to allow line breaks
+
+            // Make sure captions are visible
+            captionDisplay.style.display = 'block'; // Ensure the captions are displayed
+
+            utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = currentVoice;
+            utterance.onend = () => {
+                currentTimestampIndex++;
+                if (isPlaying) {
+                    player.playVideo();
+                }
+                // Hide the captions after speaking
+                captionDisplay.style.display = 'none';  // Hide captions when finished
+            };
+            synth.cancel();
+            synth.speak(utterance);
+        }
+
+
+
+        playPauseBtn.addEventListener("click", () => {
+            if (isPlaying) {
+                player.pauseVideo();
+                if (synth.speaking) {
+                    synth.pause();
+                    isSpeechPaused = true;
+                }
+                isPlaying = false;
+                playPauseBtn.textContent = "Play";
+            } else {
+                if (isSpeechPaused) {
+                    synth.resume();
+                    isSpeechPaused = false;
+                } else {
+                    if (currentTimestampIndex < videoData.timestamps.length) {
+                        player.playVideo();
+                    }
+                }
+                isPlaying = true;
+                playPauseBtn.textContent = "Pause";
+            }
+        });
+
+        testVoiceBtn.addEventListener("click", () => {
+            if (currentVoice) {
+                const testUtterance = new SpeechSynthesisUtterance(sampleVoiceText);
+                testUtterance.voice = currentVoice;
+
+                captionDisplay.textContent = sampleVoiceText;
+                captionDisplay.style.display = "block"; // Show the caption for the test voice
+
+                testUtterance.onend = () => {
+                    captionDisplay.style.display = "none";
+                };
+
+                synth.cancel();
+                synth.speak(testUtterance);
+            } else {
+                alert("Voice not loaded. Please try again.");
+            }
+        });
+    </script>
+
+    <!-- Load the YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+
+</html>

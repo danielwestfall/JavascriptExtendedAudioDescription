@@ -1,0 +1,127 @@
+/* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 0 10vw; /* Add padding on left and right sides */
+}
+
+h1 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.instruction {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center; /* Center the buttons horizontally */
+  margin-bottom: 20px;
+  width: 100%; /* Ensure the container takes up full width */
+}
+
+/* Button Styling */
+button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+button:active {
+  background-color: #397d3c;
+}
+
+/* Main Content */
+main {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 30px;
+}
+
+#playerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+#player {
+  position: relative;
+  width: 640px;
+  height: 390px;
+}
+
+#captionDisplay {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333; /* Black text */
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  background-color: transparent; /* No background color */
+  white-space: pre-line; /* Ensures that line breaks are preserved */
+  display: none; /* Initially hidden until shown by JavaScript */
+}
+
+/* Footer */
+footer {
+  margin-top: 40px;
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  main {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  #playerContainer {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  #captionDisplay {
+    max-width: 300px;
+    margin-left: 20px;
+  }
+
+  #player {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  #captionDisplay {
+    width: 100%;
+    margin-top: 20px;
+  }
+}
